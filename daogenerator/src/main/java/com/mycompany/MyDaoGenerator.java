@@ -1,6 +1,7 @@
 package com.mycompany;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -30,10 +31,26 @@ public class MyDaoGenerator {
     }
 
     private static void createDirs(Path path)  throws IOException {
-        if (Files.notExists(path, LinkOption.NOFOLLOW_LINKS)) {
-            Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxr-x---");
-            FileAttribute<Set<PosixFilePermission>> attrs = PosixFilePermissions.asFileAttribute(perms);
-            Files.createDirectories(path, attrs);
+//        if (Files.notExists(path, LinkOption.NOFOLLOW_LINKS)) {
+//            Set<PosixFilePermission> perms = PosixFilePermissions.fromString("rwxr-x---");
+//            FileAttribute<Set<PosixFilePermission>> attrs = PosixFilePermissions.asFileAttribute(perms);
+//            Files.createDirectories(path, attrs);
+//        }
+
+        File theDir = new File( path.toString() );
+        if (!theDir.exists()) {
+            System.out.println("creating directory: " + path.toString() );
+            boolean result = false;
+
+            try{
+                final boolean mkdir_ = theDir.mkdir();
+                result = true;
+            }catch(SecurityException se){ System.out.println(se.toString()) ;}
+            if(result) {
+                System.out.println("DIR created");
+            }
         }
+
+
     }
 }

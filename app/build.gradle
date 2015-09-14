@@ -17,9 +17,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    sourceSets {
+        main {
+            java.srcDir  'gen-src'
+        }
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:23.0.0'
+    // add greenDao library
+    compile 'de.greenrobot:greendao:2.0.0'
+    compile 'de.greenrobot:greendao-generator:2.0.0'
 }

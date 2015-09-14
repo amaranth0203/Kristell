@@ -10,11 +10,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.mycompany.User;
+
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
     public void testButtonClicked( View view ) {
+        User user = new User() ;
         System.out.println( "[+] aaaa " + new Date().toString()) ;
         EditText editText = ( EditText )findViewById( R.id.editText_test ) ;
         String Message = editText.getText().toString() ;
