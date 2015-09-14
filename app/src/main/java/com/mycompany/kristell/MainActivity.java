@@ -1,11 +1,26 @@
 package com.mycompany.kristell;
 
+import android.content.Intent;
+import android.hardware.display.DisplayManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
+
+    public void testButtonClicked( View view ) {
+        System.out.println( "[+] aaaa " + new Date().toString()) ;
+        EditText editText = ( EditText )findViewById( R.id.editText_test ) ;
+        String Message = editText.getText().toString() ;
+        TextView textView = ( TextView )findViewById( R.id.textView_test ) ;
+        textView.setText( Message ) ;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
