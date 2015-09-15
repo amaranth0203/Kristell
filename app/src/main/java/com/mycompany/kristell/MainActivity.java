@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("[+] This is testButtonClicked function" + new Date().toString()) ;
         EditText editText = ( EditText )findViewById( R.id.editText_test ) ;
         String Message = editText.getText().toString() ;
+        editText.setText("");
         Button button = ( Button )findViewById( R.id.button2 ) ;
         button.setText( "comment : " + Message.split(" ")[0] ) ;
         TextView textView = ( TextView )findViewById( R.id.textView_test ) ;
