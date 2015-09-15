@@ -11,11 +11,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.mycompany.DaoMaster;
-import com.mycompany.DaoSession;
-import com.mycompany.User;
-import com.mycompany.UserDao;
-
 import java.util.Date;
 import java.util.List;
 
@@ -23,11 +18,11 @@ import de.greenrobot.dao.internal.DaoConfig;
 
 public class MainActivity extends AppCompatActivity {
 
-    private SQLiteDatabase db ;
-    private DaoMaster daoMaster ;
-    private DaoSession daoSession ;
-    private UserDao userDao ;
-    private User user ;
+//    private SQLiteDatabase db ;
+//    private DaoMaster daoMaster ;
+//    private DaoSession daoSession ;
+//    private UserDao userDao ;
+//    private User user ;
 
     public void testButtonClicked( View view ) {
         System.out.println("[+] This is testButtonClicked function" + new Date().toString()) ;
@@ -38,31 +33,31 @@ public class MainActivity extends AppCompatActivity {
         TextView textView = ( TextView )findViewById( R.id.textView_test ) ;
         textView.setText(Message) ;
 
-        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "test-db", null);
-        db = helper.getWritableDatabase();
-        daoMaster= new DaoMaster( db ) ;
-        daoSession = daoMaster.newSession() ;
-        userDao = daoSession.getUserDao() ;
-        user = new User( ) ;
-        user.setName("ben") ;
-        user.setPassword("ben's passwd") ;
-        user.setUserId(Long.parseLong(Message)) ;
-        userDao.insert(user) ;
+//        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "test-db", null);
+//        db = helper.getWritableDatabase();
+//        daoMaster= new DaoMaster( db ) ;
+//        daoSession = daoMaster.newSession() ;
+//        userDao = daoSession.getUserDao() ;
+//        user = new User( ) ;
+//        user.setName("ben") ;
+//        user.setPassword("ben's passwd") ;
+//        user.setUserId(Long.parseLong(Message)) ;
+//        userDao.insert(user) ;
     }
 
     public void showButtonClicked( View view ) {
         System.out.println("[+] This is showButtonClicked function" + new Date().toString()) ;
-        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "test-db", null);
-        db = helper.getWritableDatabase();
-        daoMaster= new DaoMaster( db ) ;
-        daoSession = daoMaster.newSession() ;
-        userDao = daoSession.getUserDao() ;
-        List<User> users = userDao.loadAll() ;
-        TextView textView = ( TextView )findViewById( R.id.textView_test ) ;
-        String Message = "" ;
-        for( int i = 0 ; i < users.size() ; i ++ )
-            Message += users.get(i).getUserId() + "\n";
-        textView.setText(Message) ;
+//        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "test-db", null);
+//        db = helper.getWritableDatabase();
+//        daoMaster= new DaoMaster( db ) ;
+//        daoSession = daoMaster.newSession() ;
+//        userDao = daoSession.getUserDao() ;
+//        List<User> users = userDao.loadAll() ;
+//        TextView textView = ( TextView )findViewById( R.id.textView_test ) ;
+//        String Message = "" ;
+//        for( int i = 0 ; i < users.size() ; i ++ )
+//            Message += users.get(i).getUserId() + "\n";
+//        textView.setText(Message) ;
     }
 
     @Override
