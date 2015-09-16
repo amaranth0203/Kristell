@@ -1,15 +1,20 @@
 package com.mycompany.kristell;
 
+import android.app.ActionBar;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Typeface;
 import android.hardware.display.DisplayManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.mycompany.kristell.DAO.Card;
@@ -47,7 +52,8 @@ public class MainActivity extends AppCompatActivity {
         TextView textView = ( TextView )findViewById( R.id.textView_test ) ;
         textView.setText( "balance : " + Message.split(" ")[1] ) ;
         card = new Card( ) ;
-        card.setCreateTime( new Date() ) ;
+        card.setCreateTime(new Date()) ;
+        card.setLastTransaction( new Date(new Date().getTime()+1000000) );
         card.setComments(Message.split(" ")[0]) ;
         card.setBalance(Double.parseDouble(Message.split(" ")[1])) ;
         cardDao = daoSession.getCardDao() ;
@@ -67,30 +73,31 @@ public class MainActivity extends AppCompatActivity {
 
     public void showButtonClicked( View view ) {
         System.out.println("[+] This is showButtonClicked function" + new Date().toString()) ;
+        listAllCard();
+    }
+
+    private void listAllCard( ) {
+        LinearLayout showLinear = ( LinearLayout )findViewById( R.id.showLinear ) ;
+        Button tmpButton ;
+        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT) ;
         cardDao = daoSession.getCardDao() ;
-        String message = "" ;
         List<Card> cards = cardDao.loadAll() ;
+        String message = "" ;
         for( int i = 0 ; i < cards.size() ; i ++ )
         {
-//            message +=  cards.get(i).getId() + " -- id\n" ;
-            message +=  cards.get(i).getComments() + " -- 注释\n" +
-                        cards.get(i).getBalance() + " -- 余额\n" +
-                        new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").
-                            format(cards.get(i).getCreateTime()) + " -- 添加时间\n\n" ;
+            message +=  cards.get(i).getComments() + " : " +
+                    cards.get(i).getBalance() + "\n" +
+                    new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").
+                            format(cards.get(i).getCreateTime()) + "\n" +
+                    new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").
+                            format(cards.get(i).getLastTransaction()) ;
+            tmpButton = new Button( this ) ;
+            tmpButton.setGravity(Gravity.LEFT);
+            tmpButton.setId(Integer.parseInt(cards.get(i).getId()+""));
+            tmpButton.setText( message );
+            message = "" ;
+            showLinear.addView(tmpButton, layoutParams);
         }
-        TextView textView = ( TextView )findViewById( R.id.textView_test ) ;
-        textView.setText( message ) ;
-//        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "test-db", null);
-//        db = helper.getWritableDatabase();
-//        daoMaster= new DaoMaster( db ) ;
-//        daoSession = daoMaster.newSession() ;
-//        userDao = daoSession.getUserDao() ;
-//        List<User> users = userDao.loadAll() ;
-//        TextView textView = ( TextView )findViewById( R.id.textView_test ) ;
-//        String Message = "" ;
-//        for( int i = 0 ; i < users.size() ; i ++ )
-//            Message += users.get(i).getUserId() + "\n";
-//        textView.setText(Message) ;
     }
 
     @Override

@@ -31,6 +31,7 @@ public class MyDaoGenerator {
         card.addIdProperty() ;
         card.addDoubleProperty("Balance") ;
         card.addDateProperty("CreateTime") ;
+        card.addDateProperty("LastTransaction");
         card.addStringProperty("Comments") ;
 
         // one card may associate with many transactions

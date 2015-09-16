@@ -7,21 +7,22 @@
         android:paddingBottom="@dimen/activity_vertical_margin"
         tools:context="com.mycompany.kristell.MainActivity">
 
-        <ScrollView
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fillViewport="true">
+            android:layout_height="match_parent">
 
-            <LinearLayout
-                android:orientation="vertical"
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:fillViewport="true"
+                android:layout_weight="1">
 
                 <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:id="@+id/showLinear">
 
                     <Button
                         android:layout_width="wrap_content"
@@ -36,93 +37,31 @@
                         android:text="输入“注释 余额”（中间用空格隔开）来添加卡\n点击show显示已经添加过的卡"
                         android:id="@+id/textView_test" />
 
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button3" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button4" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button12"
-                        android:layout_gravity="center_horizontal" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button5" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button6" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button11"
-                        android:layout_gravity="center_horizontal" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button10" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button7" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button8" />
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="New Button"
-                        android:id="@+id/button9" />
-
                 </LinearLayout>
+            </ScrollView>
 
 
-                <LinearLayout
-                    android:gravity="center|bottom"
-                    android:orientation="horizontal"
-                    android:layout_width="fill_parent"
+            <LinearLayout
+                android:gravity="center|bottom"
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0">
+                <EditText
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="3">
-                    <EditText
-                        android:layout_weight="1"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:singleLine="false"
-                        android:id="@+id/editText_test"/>
-                    <Button
-                        android:layout_weight="0"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="test"
-                        android:id="@+id/button"
-                        android:onClick="testButtonClicked"/>
-                </LinearLayout>
-
+                    android:singleLine="false"
+                    android:id="@+id/editText_test"/>
+                <Button
+                    android:layout_weight="0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="test"
+                    android:id="@+id/button"
+                    android:onClick="testButtonClicked"/>
             </LinearLayout>
-        </ScrollView>
+
+        </LinearLayout>
 
     </RelativeLayout>

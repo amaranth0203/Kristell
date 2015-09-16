@@ -26,7 +26,8 @@ public class CardDao extends AbstractDao<Card, Long> {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Balance = new Property(1, Double.class, "Balance", false, "BALANCE");
         public final static Property CreateTime = new Property(2, java.util.Date.class, "CreateTime", false, "CREATE_TIME");
-        public final static Property Comments = new Property(3, String.class, "Comments", false, "COMMENTS");
+        public final static Property LastTransaction = new Property(3, java.util.Date.class, "LastTransaction", false, "LAST_TRANSACTION");
+        public final static Property Comments = new Property(4, String.class, "Comments", false, "COMMENTS");
     };
 
     private DaoSession daoSession;
@@ -48,7 +49,8 @@ public class CardDao extends AbstractDao<Card, Long> {
                 "\"_id\" INTEGER PRIMARY KEY ," + // 0: id
                 "\"BALANCE\" REAL," + // 1: Balance
                 "\"CREATE_TIME\" INTEGER," + // 2: CreateTime
-                "\"COMMENTS\" TEXT);"); // 3: Comments
+                "\"LAST_TRANSACTION\" INTEGER," + // 3: LastTransaction
+                "\"COMMENTS\" TEXT);"); // 4: Comments
     }
 
     /** Drops the underlying database table. */
@@ -77,9 +79,14 @@ public class CardDao extends AbstractDao<Card, Long> {
             stmt.bindLong(3, CreateTime.getTime());
         }
  
+        java.util.Date LastTransaction = entity.getLastTransaction();
+        if (LastTransaction != null) {
+            stmt.bindLong(4, LastTransaction.getTime());
+        }
+ 
         String Comments = entity.getComments();
         if (Comments != null) {
-            stmt.bindString(4, Comments);
+            stmt.bindString(5, Comments);
         }
     }
 
@@ -102,7 +109,8 @@ public class CardDao extends AbstractDao<Card, Long> {
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getDouble(offset + 1), // Balance
             cursor.isNull(offset + 2) ? null : new java.util.Date(cursor.getLong(offset + 2)), // CreateTime
-            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3) // Comments
+            cursor.isNull(offset + 3) ? null : new java.util.Date(cursor.getLong(offset + 3)), // LastTransaction
+            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4) // Comments
         );
         return entity;
     }
@@ -113,7 +121,8 @@ public class CardDao extends AbstractDao<Card, Long> {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setBalance(cursor.isNull(offset + 1) ? null : cursor.getDouble(offset + 1));
         entity.setCreateTime(cursor.isNull(offset + 2) ? null : new java.util.Date(cursor.getLong(offset + 2)));
-        entity.setComments(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
+        entity.setLastTransaction(cursor.isNull(offset + 3) ? null : new java.util.Date(cursor.getLong(offset + 3)));
+        entity.setComments(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
      }
     
     /** @inheritdoc */

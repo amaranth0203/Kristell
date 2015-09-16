@@ -13,6 +13,7 @@ public class Card {
     private Long id;
     private Double Balance;
     private java.util.Date CreateTime;
+    private java.util.Date LastTransaction;
     private String Comments;
 
     /** Used to resolve relations */
@@ -30,10 +31,11 @@ public class Card {
         this.id = id;
     }
 
-    public Card(Long id, Double Balance, java.util.Date CreateTime, String Comments) {
+    public Card(Long id, Double Balance, java.util.Date CreateTime, java.util.Date LastTransaction, String Comments) {
         this.id = id;
         this.Balance = Balance;
         this.CreateTime = CreateTime;
+        this.LastTransaction = LastTransaction;
         this.Comments = Comments;
     }
 
@@ -65,6 +67,14 @@ public class Card {
 
     public void setCreateTime(java.util.Date CreateTime) {
         this.CreateTime = CreateTime;
+    }
+
+    public java.util.Date getLastTransaction() {
+        return LastTransaction;
+    }
+
+    public void setLastTransaction(java.util.Date LastTransaction) {
+        this.LastTransaction = LastTransaction;
     }
 
     public String getComments() {
