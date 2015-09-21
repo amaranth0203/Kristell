@@ -1,13 +1,8 @@
 package com.mycompany.kristell;
 
-import android.app.ActionBar;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Typeface;
-import android.hardware.display.DisplayManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -19,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.mycompany.kristell.DAO.Card;
 import com.mycompany.kristell.DAO.CardDao;
@@ -31,9 +25,7 @@ import com.mycompany.kristell.DAO.TransactionDao;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.zip.Inflater;
 
-import de.greenrobot.dao.internal.DaoConfig;
 
 public class MainActivity extends AppCompatActivity {
 
