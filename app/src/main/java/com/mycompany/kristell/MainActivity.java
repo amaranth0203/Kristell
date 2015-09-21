@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
         Button button = ( Button )findViewById( R.id.button2 ) ;
         button.setText( "Add");
         listAllCards();
+        AddCards() ;
     }
 
     public void TransButtonClicked(View view ) {
@@ -116,8 +117,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addCards() {
-
+    private void AddCards() {
+        AlertDialog.Builder addCardDialog = new AlertDialog.Builder(this) ;
+        addCardDialog.setTitle("输入信息") ;
+        LinearLayout outter = new LinearLayout(this) ;
+        outter.setOrientation(LinearLayout.VERTICAL) ;
+        LinearLayout inner1 = new LinearLayout(this) ;
+        inner1.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout inner2 = new LinearLayout(this) ;
+        inner2.setOrientation(LinearLayout.HORIZONTAL);
+        inner1.addView(new Button(this));
+        inner1.addView(new Button(this));
+        inner1.addView(new Button(this));
+        inner2.addView(new Button(this));
+        inner2.addView(new Button(this));
+        outter.addView(inner1);
+        outter.addView(inner2);
+        addCardDialog.setView(outter) ;
+        addCardDialog.show() ;
     }
 
     private void listAllCards( ) {
