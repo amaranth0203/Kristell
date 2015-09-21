@@ -27,15 +27,9 @@
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="show"
+                        android:text="Add"
                         android:id="@+id/button2"
-                        android:onClick="showButtonClicked"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="输入“注释 余额”（中间用空格隔开）来添加卡\n点击show显示已经添加过的卡"
-                        android:id="@+id/textView_test" />
+                        android:onClick="AddButtonClicked"/>
 
                 </LinearLayout>
             </ScrollView>
@@ -57,9 +51,16 @@
                     android:layout_weight="0"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="test"
+                    android:text="Trans"
+                    android:id="@+id/button3"
+                    android:onClick="TransButtonClicked"/>
+                <Button
+                    android:layout_weight="0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cards"
                     android:id="@+id/button"
-                    android:onClick="testButtonClicked"/>
+                    android:onClick="CardsButtonClicked"/>
             </LinearLayout>
 
         </LinearLayout>
