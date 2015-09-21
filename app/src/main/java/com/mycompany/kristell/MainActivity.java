@@ -116,6 +116,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void addCards() {
+
+    }
+
     private void listAllCards( ) {
         LinearLayout showLinear = ( LinearLayout )findViewById( R.id.showLinear ) ;
         Button __ = ( Button )findViewById( R.id.button2 ) ;
@@ -130,18 +134,15 @@ public class MainActivity extends AppCompatActivity {
         {
             message +=  cards.get(i).getComments() + " : " +
                     cards.get(i).getBalance() + "\n" +
-                    new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").
+                    new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
                             format(cards.get(i).getCreateTime()) + "\n" +
-                    new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").
+                    new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
                             format(cards.get(i).getLastTransaction()) ;
             tmpButton = new Button( this ) ;
             tmpButton.setGravity(Gravity.LEFT);
             tmpButton.setId(Integer.parseInt(cards.get(i).getId() + ""));
             tmpButton.setText(message);
-            LayoutInflater inflater = this.getLayoutInflater();
-            View v_iew= inflater.inflate( R.layout.activity_main , null) ;
             final AlertDialog.Builder modifyCardInfoDialog = new AlertDialog.Builder(this) ;
-            modifyCardInfoDialog.setView(v_iew);
             EditText editText = new EditText(this);
             modifyCardInfoDialog.setTitle("输入新的注释") ;
             editText.setHint(cards.get(i).getComments().toString()) ;
@@ -181,6 +182,60 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void listAllTrans( ) {
+        LinearLayout showLinear = ( LinearLayout )findViewById( R.id.showLinear ) ;
+        Button __ = ( Button )findViewById( R.id.button2 ) ;
+        showLinear.removeAllViews();
+        showLinear.addView(__);
+        Button tmpButton ;
+        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT) ;
+        transactionDao = daoSession.getTransactionDao() ;
+        final List<Transaction> trans = transactionDao.loadAll() ;
+        String message = "" ;
+        for( Transaction transaction : trans ) {
+            message +=  transaction.getAmount() + "\n" +
+                        transaction.getComments() + "\n" +
+                    new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
+                            format(transaction.getOccurredTime()) ;
+            tmpButton = new Button(this);
+            tmpButton.setGravity(Gravity.LEFT);
+            tmpButton.setId(Integer.parseInt(transaction.getId() + ""));
+            tmpButton.setText(message);
+            final AlertDialog.Builder modifyTransInfoDialog = new AlertDialog.Builder(this);
+            EditText editText = new EditText(this);
+            modifyTransInfoDialog.setTitle("输入新的注释");
+            editText.setHint(transaction.getComments());
+            editText.setId(Integer.parseInt(transaction.getId() + ""));
+            modifyTransInfoDialog.setView(editText);
+            modifyTransInfoDialog.setPositiveButton("好的",
+                    new modifyTransCommentListener(
+                            transaction,
+                            editText
+                    )
+            );
+            modifyTransInfoDialog.setNegativeButton("算了", null);
+            tmpButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    modifyTransInfoDialog.show();
+                }
+            });
+            showLinear.addView(tmpButton, layoutParams);
+            message = "";
+        }
+    }
+
+    private class modifyTransCommentListener implements DialogInterface.OnClickListener{
+        private Transaction transaction ;
+        private EditText editText ;
+        public modifyTransCommentListener( Transaction transaction , EditText editText ){
+            this.transaction = transaction ;
+            this.editText = editText ;
+        }
+        public void onClick(DialogInterface dialogInterface, int i) {
+            transaction.setComments(editText.getText().toString());
+            transactionDao.getSession().update(transaction) ;
+            listAllTrans();
+        }
     }
 
     private Card getCardByComment( String comment ) {
