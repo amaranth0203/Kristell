@@ -2,6 +2,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.mycompany.kristell.MainActivity">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+    <item
+        android:id="@+id/action_addCard"
+        android:title="Add Card"
+        android:orderInCategory="100"
+        android:onClick="AddCard"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_listAllCards"
+        android:title="List All Cards"
+        android:orderInCategory="100"
+        android:onClick="ListAllCards"
+        app:showAsAction="never" />
+    <item android:id="@+id/action_listAllTrans"
+        android:title="List All Trans"
+        android:orderInCategory="100"
+        android:onClick="ListAllTrans"
+        app:showAsAction="never" />
 </menu>

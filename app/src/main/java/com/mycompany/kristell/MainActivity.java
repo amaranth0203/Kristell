@@ -2,7 +2,10 @@ package com.mycompany.kristell;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -17,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
+import android.widget.TextView;
 
 import com.mycompany.kristell.DAO.Card;
 import com.mycompany.kristell.DAO.CardDao;
@@ -24,6 +28,8 @@ import com.mycompany.kristell.DAO.DaoMaster;
 import com.mycompany.kristell.DAO.DaoSession;
 import com.mycompany.kristell.DAO.Transaction;
 import com.mycompany.kristell.DAO.TransactionDao;
+
+import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -49,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         daoMaster= new DaoMaster( db ) ;
         daoSession = daoMaster.newSession() ;
         listAllCards();
+        showTotalMoney();
     }
 
     @Override
@@ -66,62 +73,22 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }
 
-    public void CardsButtonClicked( View view ) {
-        Button button = ( Button )findViewById( R.id.button2 ) ;
-        button.setText( "Add");
+    public void ListAllCards(MenuItem item) {
         listAllCards();
-        AddCards() ;
     }
 
-    public void TransButtonClicked(View view ) {
-        Button button = ( Button )findViewById( R.id.button2 ) ;
-        button.setText( "Add");
+    public void ListAllTrans(MenuItem item) {
         listAllTrans();
-        AddTrans() ;
     }
 
-    public void AddButtonClicked( View view ) {
-        System.out.println("[+] This is testButtonClicked function" + new Date().toString()) ;
-        EditText editText = ( EditText )findViewById( R.id.editText_test ) ;
-        String message = editText.getText().toString() ;
-        if(message.split(" ")[0].equals("1")){
-            //add cards
-            editText.setText("");
-            Button button = ( Button )findViewById( R.id.button2 ) ;
-            button.setText( "comment : " + message.split(" ")[1] +
-                    "balance : " + message.split(" ")[2]  ) ;
-            card = new Card( ) ;
-            card.setCreateTime(new Date()) ;
-            card.setLastTransaction( new Date(new Date().getTime()+1000000) );
-            card.setComments(message.split(" ")[1]) ;
-            card.setBalance(Double.parseDouble(message.split(" ")[2])) ;
-            cardDao = daoSession.getCardDao() ;
-            cardDao.insert( card ) ;
-        }else{
-            //add transaction
-            editText.setText("");
-            Button button = ( Button )findViewById( R.id.button2 ) ;
-            button.setText( "comment : " + message.split(" ")[1] +
-                    "amount : " + message.split(" ")[2] +
-                    "cardComment : " + message.split(" ")[3]  ) ;
-            transaction = new Transaction( ) ;
-            transaction.setComments( message.split(" ")[1] ) ;
-            transaction.setAmount( Double.parseDouble(message.split(" ")[2]) ) ;
-            transaction.setCard( getCardByComment( message.split(" ")[3] ) ) ;
-            transaction.setOccurredTime(new Date()) ;
-            transactionDao = daoSession.getTransactionDao() ;
-            transactionDao.insert(transaction) ;
-        }
-    }
-
-    private void AddCards() {
+    public void AddCard(MenuItem item) {
         AlertDialog.Builder addCardDialog = new AlertDialog.Builder(this) ;
         LinearLayout outter = new LinearLayout(this) ;
         final EditText edittext1 = new EditText(this);
@@ -131,15 +98,15 @@ public class MainActivity extends AppCompatActivity {
         edittext2.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
         edittext2.setRawInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
         edittext2.setFilters(new InputFilter[]{
-            new InputFilter() {
-                public CharSequence filter(CharSequence src, int start, int end, Spanned dst, int dstart, int dend) {
-                    if (src.toString().matches("-|\\d|.")) {
-                        return src;
-                    }else{
-                        return "";
+                new InputFilter() {
+                    public CharSequence filter(CharSequence src, int start, int end, Spanned dst, int dstart, int dend) {
+                        if (src.toString().matches("-|\\d|.")) {
+                            return src;
+                        } else {
+                            return "";
+                        }
                     }
                 }
-            }
         });
         edittext1.setHint("注释 - 不输入 不存储");
         edittext2.setHint("余额 - 不输入 余额0");
@@ -149,32 +116,33 @@ public class MainActivity extends AppCompatActivity {
         addCardDialog.setTitle("输入信息") ;
         addCardDialog.setView(outter) ;
         addCardDialog.setPositiveButton("好的",
-            new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    if (edittext1.getText().toString().matches("(\t)+| +")||
-                        edittext1.getText().toString().equals("")){
-                    }else{
-                        card = new Card( ) ;
-                        card.setCreateTime(new Date()) ;
-                        card.setLastTransaction(new Date());
-                        card.setComments(edittext1.getText().toString()) ;
-                        if( edittext2.getText().toString().matches("^-?(\\d)+(.(\\d)+)?$") ) {
-                            card.setBalance(Double.parseDouble(edittext2.getText().toString()));
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (edittext1.getText().toString().matches("(\t)+| +") ||
+                                edittext1.getText().toString().equals("")) {
+                        } else {
+                            card = new Card();
+                            card.setCreateTime(new Date());
+                            card.setLastTransaction(new Date());
+                            card.setComments(edittext1.getText().toString());
+                            if (edittext2.getText().toString().matches("^-?(\\d)+(.(\\d)+)?$")) {
+                                card.setBalance(Double.parseDouble(edittext2.getText().toString()));
+                            } else {
+                                card.setBalance(0.0);
+                            }
+                            daoSession.getCardDao().insert(card);
+                            listAllCards();
+                            showTotalMoney();
                         }
-                        else {
-                            card.setBalance(0.0);
-                        }
-                        daoSession.getCardDao().insert(card) ;
                     }
                 }
-            }
         );
         addCardDialog.setNegativeButton("算了", null);
         addCardDialog.show() ;
     }
 
-    private void AddTrans() {
+    public void AddTrans( View view ) {
         AlertDialog.Builder addTransDialog = new AlertDialog.Builder(this) ;
         LinearLayout outter = new LinearLayout(this) ;
         final EditText edittext1 = new EditText(this);
@@ -206,30 +174,31 @@ public class MainActivity extends AppCompatActivity {
         addTransDialog.setTitle("输入信息") ;
         addTransDialog.setView(outter) ;
         addTransDialog.setPositiveButton("好的",
-            new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    if (edittext1.getText().toString().matches("(\t)+| +")||
-                            edittext1.getText().toString().equals("")){
-                    }else{
-                        transaction = new Transaction() ;
-                        transaction.setOccurredTime(new Date());
-                        transaction.setComments(edittext1.getText().toString()) ;
-                        card = getCardByComment(edittext3.getText().toString());
-                        if( edittext2.getText().toString().matches("^-?(\\d)+(.(\\d)+)?$") ) {
-                            transaction.setAmount(Double.parseDouble(edittext2.getText().toString()));
-                            card.setLastTransaction(new Date());
-                            card.setBalance( card.getBalance() - transaction.getAmount() );
-                            daoSession.getCardDao().update(card);
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (edittext1.getText().toString().matches("(\t)+| +") ||
+                                edittext1.getText().toString().equals("")) {
+                        } else {
+                            transaction = new Transaction();
+                            transaction.setOccurredTime(new Date());
+                            transaction.setComments(edittext1.getText().toString());
+                            card = getCardByComment(edittext3.getText().toString());
+                            if (edittext2.getText().toString().matches("^-?(\\d)+(.(\\d)+)?$")) {
+                                transaction.setAmount(Double.parseDouble(edittext2.getText().toString()));
+                                card.setLastTransaction(new Date());
+                                card.setBalance(card.getBalance() - transaction.getAmount());
+                                daoSession.getCardDao().update(card);
+                            } else {
+                                transaction.setAmount(0.0);
+                            }
+                            transaction.setCard(card);
+                            daoSession.getTransactionDao().insert(transaction);
+                            listAllCards();
+                            showTotalMoney();
                         }
-                        else {
-                            transaction.setAmount(0.0);
-                        }
-                        transaction.setCard( card ) ;
-                        daoSession.getTransactionDao().insert(transaction) ;
                     }
                 }
-            }
         );
         addTransDialog.setNegativeButton("算了", null);
         addTransDialog.show() ;
@@ -237,9 +206,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void listAllCards( ) {
         LinearLayout showLinear = ( LinearLayout )findViewById( R.id.showLinear ) ;
-        Button __ = ( Button )findViewById( R.id.button2 ) ;
         showLinear.removeAllViews();
-        showLinear.addView(__);
         Button tmpButton ;
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT) ;
         cardDao = daoSession.getCardDao() ;
@@ -250,12 +217,11 @@ public class MainActivity extends AppCompatActivity {
             message +=  cards.get(i).getComments() + " : " +
                     cards.get(i).getBalance() + "\n" +
                     new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
-                            format(cards.get(i).getCreateTime()) + "\n" +
+                            format(cards.get(i).getCreateTime()) + " created\n" +
                     new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
-                            format(cards.get(i).getLastTransaction()) ;
+                            format(cards.get(i).getLastTransaction()) + " final trans";
             tmpButton = new Button( this ) ;
-            tmpButton.setGravity(Gravity.RIGHT);
-            tmpButton.setId(Integer.parseInt(cards.get(i).getId() + ""));
+            tmpButton.setGravity(Gravity.LEFT);
             tmpButton.setText(message);
             final AlertDialog.Builder modifyCardInfoDialog = new AlertDialog.Builder(this) ;
             EditText editText = new EditText(this);
@@ -281,26 +247,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class modifyCardCommentListener implements DialogInterface.OnClickListener{
-        private Card card ;
-        private EditText editText ;
-        public modifyCardCommentListener( Card card , EditText editText ){
-            this.card = card ;
-            this.editText = editText ;
-        }
-        public void onClick(DialogInterface dialogInterface, int i) {
-            card.setComments(editText.getText().toString());
-            cardDao = daoSession.getCardDao() ;
-            cardDao.update(card);
-            listAllCards();
-        }
-    }
-
     private void listAllTrans( ) {
         LinearLayout showLinear = ( LinearLayout )findViewById( R.id.showLinear ) ;
-        Button __ = ( Button )findViewById( R.id.button2 ) ;
         showLinear.removeAllViews();
-        showLinear.addView(__);
         Button tmpButton ;
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT) ;
         transactionDao = daoSession.getTransactionDao() ;
@@ -308,12 +257,11 @@ public class MainActivity extends AppCompatActivity {
         String message = "" ;
         for( Transaction transaction : trans ) {
             message +=  transaction.getAmount() + "\n" +
-                        transaction.getComments() + "\n" +
+                    transaction.getComments() + "\n" +
                     new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
                             format(transaction.getOccurredTime()) ;
             tmpButton = new Button(this);
             tmpButton.setGravity(Gravity.LEFT);
-            tmpButton.setId(Integer.parseInt(transaction.getId() + ""));
             tmpButton.setText(message);
             final AlertDialog.Builder modifyTransInfoDialog = new AlertDialog.Builder(this);
             EditText editText = new EditText(this);
@@ -339,6 +287,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private class modifyCardCommentListener implements DialogInterface.OnClickListener{
+        private Card card ;
+        private EditText editText ;
+        public modifyCardCommentListener( Card card , EditText editText ){
+            this.card = card ;
+            this.editText = editText ;
+        }
+        public void onClick(DialogInterface dialogInterface, int i) {
+            card.setComments(editText.getText().toString());
+            cardDao = daoSession.getCardDao() ;
+            cardDao.update(card);
+            listAllCards();
+        }
+    }
+
     private class modifyTransCommentListener implements DialogInterface.OnClickListener{
         private Transaction transaction ;
         private EditText editText ;
@@ -360,5 +323,15 @@ public class MainActivity extends AppCompatActivity {
                 return card ;
         }
         return null ;
+    }
+
+    private void showTotalMoney() {
+        double money = 0 ;
+        for( Card card : daoSession.getCardDao().loadAll() )
+            money += card.getBalance() ;
+        TextView __ = (TextView)findViewById(R.id.editText_test) ;
+        __.setText( "Total : " + money ) ;
+        __.setTextColor(Color.rgb(0, 0, 0));
+        __.setTypeface(null, Typeface.BOLD_ITALIC);
     }
 }

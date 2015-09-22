@@ -24,13 +24,6 @@
                     android:orientation="vertical"
                     android:id="@+id/showLinear">
 
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Add"
-                        android:id="@+id/button2"
-                        android:onClick="AddButtonClicked"/>
-
                 </LinearLayout>
             </ScrollView>
 
@@ -41,26 +34,19 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0">
-                <EditText
+                <TextView
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:singleLine="false"
                     android:id="@+id/editText_test"/>
+
                 <Button
                     android:layout_weight="0"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Trans"
-                    android:id="@+id/button3"
-                    android:onClick="TransButtonClicked"/>
-                <Button
-                    android:layout_weight="0"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Cards"
+                    android:text="+Trans"
                     android:id="@+id/button"
-                    android:onClick="CardsButtonClicked"/>
+                    android:onClick="AddTrans"/>
             </LinearLayout>
 
         </LinearLayout>
