@@ -5,8 +5,10 @@ import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.Spanned;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
 
 import com.mycompany.kristell.DAO.Card;
 import com.mycompany.kristell.DAO.CardDao;
@@ -81,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         Button button = ( Button )findViewById( R.id.button2 ) ;
         button.setText( "Add");
         listAllTrans();
+        AddTrans() ;
     }
 
     public void AddButtonClicked( View view ) {
@@ -119,22 +123,116 @@ public class MainActivity extends AppCompatActivity {
 
     private void AddCards() {
         AlertDialog.Builder addCardDialog = new AlertDialog.Builder(this) ;
-        addCardDialog.setTitle("输入信息") ;
         LinearLayout outter = new LinearLayout(this) ;
+        final EditText edittext1 = new EditText(this);
+        final EditText edittext2 = new EditText(this);
         outter.setOrientation(LinearLayout.VERTICAL) ;
-        LinearLayout inner1 = new LinearLayout(this) ;
-        inner1.setOrientation(LinearLayout.HORIZONTAL);
-        LinearLayout inner2 = new LinearLayout(this) ;
-        inner2.setOrientation(LinearLayout.HORIZONTAL);
-        inner1.addView(new Button(this));
-        inner1.addView(new Button(this));
-        inner1.addView(new Button(this));
-        inner2.addView(new Button(this));
-        inner2.addView(new Button(this));
-        outter.addView(inner1);
-        outter.addView(inner2);
+        edittext1.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        edittext2.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        edittext2.setRawInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        edittext2.setFilters(new InputFilter[]{
+            new InputFilter() {
+                public CharSequence filter(CharSequence src, int start, int end, Spanned dst, int dstart, int dend) {
+                    if (src.toString().matches("-|\\d|.")) {
+                        return src;
+                    }else{
+                        return "";
+                    }
+                }
+            }
+        });
+        edittext1.setHint("注释 - 不输入 不存储");
+        edittext2.setHint("余额 - 不输入 余额0");
+        outter.addView(edittext1);
+        outter.addView(edittext2);
+
+        addCardDialog.setTitle("输入信息") ;
         addCardDialog.setView(outter) ;
+        addCardDialog.setPositiveButton("好的",
+            new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    if (edittext1.getText().toString().matches("(\t)+| +")||
+                        edittext1.getText().toString().equals("")){
+                    }else{
+                        card = new Card( ) ;
+                        card.setCreateTime(new Date()) ;
+                        card.setLastTransaction(new Date());
+                        card.setComments(edittext1.getText().toString()) ;
+                        if( edittext2.getText().toString().matches("^-?(\\d)+(.(\\d)+)?$") ) {
+                            card.setBalance(Double.parseDouble(edittext2.getText().toString()));
+                        }
+                        else {
+                            card.setBalance(0.0);
+                        }
+                        daoSession.getCardDao().insert(card) ;
+                    }
+                }
+            }
+        );
+        addCardDialog.setNegativeButton("算了", null);
         addCardDialog.show() ;
+    }
+
+    private void AddTrans() {
+        AlertDialog.Builder addTransDialog = new AlertDialog.Builder(this) ;
+        LinearLayout outter = new LinearLayout(this) ;
+        final EditText edittext1 = new EditText(this);
+        final EditText edittext2 = new EditText(this);
+        final EditText edittext3 = new EditText(this);
+        outter.setOrientation(LinearLayout.VERTICAL) ;
+        edittext1.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        edittext2.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        edittext3.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        edittext2.setRawInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        edittext2.setFilters(new InputFilter[]{
+                new InputFilter() {
+                    public CharSequence filter(CharSequence src, int start, int end, Spanned dst, int dstart, int dend) {
+                        if (src.toString().matches("-|\\d|.")) {
+                            return src;
+                        } else {
+                            return "";
+                        }
+                    }
+                }
+        });
+        edittext1.setHint("注释 - 不输入 不存储");
+        edittext2.setHint("金额 - 不输入 金额0");
+        edittext3.setHint("注释 - 卡的注释");
+        outter.addView(edittext1);
+        outter.addView(edittext2);
+        outter.addView(edittext3);
+
+        addTransDialog.setTitle("输入信息") ;
+        addTransDialog.setView(outter) ;
+        addTransDialog.setPositiveButton("好的",
+            new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    if (edittext1.getText().toString().matches("(\t)+| +")||
+                            edittext1.getText().toString().equals("")){
+                    }else{
+                        transaction = new Transaction() ;
+                        transaction.setOccurredTime(new Date());
+                        transaction.setComments(edittext1.getText().toString()) ;
+                        card = getCardByComment(edittext3.getText().toString());
+                        if( edittext2.getText().toString().matches("^-?(\\d)+(.(\\d)+)?$") ) {
+                            transaction.setAmount(Double.parseDouble(edittext2.getText().toString()));
+                            card.setLastTransaction(new Date());
+                            card.setBalance( card.getBalance() - transaction.getAmount() );
+                            daoSession.getCardDao().update(card);
+                        }
+                        else {
+                            transaction.setAmount(0.0);
+                        }
+                        transaction.setCard( card ) ;
+                        daoSession.getTransactionDao().insert(transaction) ;
+                    }
+                }
+            }
+        );
+        addTransDialog.setNegativeButton("算了", null);
+        addTransDialog.show() ;
     }
 
     private void listAllCards( ) {
@@ -156,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
                     new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
                             format(cards.get(i).getLastTransaction()) ;
             tmpButton = new Button( this ) ;
-            tmpButton.setGravity(Gravity.LEFT);
+            tmpButton.setGravity(Gravity.RIGHT);
             tmpButton.setId(Integer.parseInt(cards.get(i).getId() + ""));
             tmpButton.setText(message);
             final AlertDialog.Builder modifyCardInfoDialog = new AlertDialog.Builder(this) ;
