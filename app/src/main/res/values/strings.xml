@@ -2,6 +2,27 @@
     <string name="app_name">Kristell</string>
     <string name="title_activity_main">Kristell</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="db_name">test-db</string>
+    <string name="addCard_title">输入信息</string>
+    <string name="addCard_PositiveButton">好的</string>
+    <string name="addCard_NegativeButton">算了</string>
+    <string name="addCard_Comment_hint">注释 - 不输入 不存储</string>
+    <string name="addCard_Balance_hint">余额 - 不输入 余额0</string>
+    <string name="addTrans_title">输入信息</string>
+    <string name="addTrans_PositiveButton">好的</string>
+    <string name="addTrans_NegativeButton">算了</string>
+    <string name="addTrans_Comment_hint">注释 - 不输入 不存储</string>
+    <string name="addTrans_Amount_hint">金额 - 不输入 金额0</string>
+    <string name="addTrans_CardComment_hint">注释 - 卡的注释</string>
+    <string name="modifyCard_title">输入新的注释</string>
+    <string name="modifyCard_PositiveButton">好的</string>
+    <string name="modifyCard_NegativeButton">算了</string>
+    <string name="modifyTrans_title">输入新的注释</string>
+    <string name="modifyTrans_PositiveButton">好的</string>
+    <string name="modifyTrans_NegativeButton">算了</string>
+    <string name="total_money"><font fgcolor="#ff008000"><b><i>Total</i></b></font></string>
+    <string name="importDB_success"><font fgcolor="#ff008000">[+] import database success</font></string>
+    <string name="importDB_failed"><font fgcolor="#ffff0000">[-] import database failed</font></string>
+    <string name="exportDB_success"><font fgcolor="#ff008000">[+] export database success</font></string>
+    <string name="exportDB_failed"><font fgcolor="#ffff0000">[-] export database failed</font></string>
 </resources>

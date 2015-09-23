@@ -19,4 +19,14 @@
         android:orderInCategory="100"
         android:onClick="ListAllTrans"
         app:showAsAction="never" />
+    <item android:id="@+id/action_backupDatabase"
+        android:title="Export DB"
+        android:orderInCategory="100"
+        android:onClick="exportDatabase"
+        app:showAsAction="never" />
+    <item android:id="@+id/action_loadDatabase"
+        android:title="Import DB"
+        android:orderInCategory="100"
+        android:onClick="ImportDatabase"
+        app:showAsAction="never" />
 </menu>

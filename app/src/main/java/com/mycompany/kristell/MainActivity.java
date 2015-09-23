@@ -2,10 +2,10 @@ package com.mycompany.kristell;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.res.ColorStateList;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -21,6 +21,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mycompany.kristell.DAO.Card;
 import com.mycompany.kristell.DAO.CardDao;
@@ -29,8 +30,10 @@ import com.mycompany.kristell.DAO.DaoSession;
 import com.mycompany.kristell.DAO.Transaction;
 import com.mycompany.kristell.DAO.TransactionDao;
 
-import org.w3c.dom.Text;
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -50,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "test-db", null);
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, getResources().getString(R.string.db_name) , null);
         db = helper.getWritableDatabase();
         daoMaster= new DaoMaster( db ) ;
         daoSession = daoMaster.newSession() ;
@@ -108,14 +111,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         });
-        edittext1.setHint("注释 - 不输入 不存储");
-        edittext2.setHint("余额 - 不输入 余额0");
+        edittext1.setHint(getResources().getString(R.string.addCard_Comment_hint));
+        edittext2.setHint(getResources().getString(R.string.addCard_Balance_hint));
         outter.addView(edittext1);
         outter.addView(edittext2);
 
-        addCardDialog.setTitle("输入信息") ;
+        addCardDialog.setTitle(getResources().getString(R.string.addCard_title)) ;
         addCardDialog.setView(outter) ;
-        addCardDialog.setPositiveButton("好的",
+        addCardDialog.setPositiveButton(getResources().getString(R.string.addCard_PositiveButton),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -138,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-        addCardDialog.setNegativeButton("算了", null);
+        addCardDialog.setNegativeButton(getResources().getString(R.string.addCard_NegativeButton), null);
         addCardDialog.show() ;
     }
 
@@ -164,16 +167,16 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         });
-        edittext1.setHint("注释 - 不输入 不存储");
-        edittext2.setHint("金额 - 不输入 金额0");
-        edittext3.setHint("注释 - 卡的注释");
+        edittext1.setHint(getResources().getString(R.string.addTrans_Comment_hint));
+        edittext2.setHint(getResources().getString(R.string.addTrans_Amount_hint));
+        edittext3.setHint(getResources().getString(R.string.addTrans_CardComment_hint));
         outter.addView(edittext1);
         outter.addView(edittext2);
         outter.addView(edittext3);
 
-        addTransDialog.setTitle("输入信息") ;
+        addTransDialog.setTitle(getResources().getString(R.string.addTrans_title)) ;
         addTransDialog.setView(outter) ;
-        addTransDialog.setPositiveButton("好的",
+        addTransDialog.setPositiveButton(getResources().getString(R.string.addTrans_PositiveButton),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -200,8 +203,70 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-        addTransDialog.setNegativeButton("算了", null);
+        addTransDialog.setNegativeButton(getResources().getString(R.string.addTrans_NegativeButton), null);
         addTransDialog.show() ;
+    }
+
+    public void exportDatabase( MenuItem item ) {
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File data = Environment.getDataDirectory();
+
+            if (sd.canWrite()) {
+                String currentDBPath = "//data//com.mycompany.kristell//databases//test-db";
+                String backupDBPath = "test-db";
+                File currentDB = new File(data, currentDBPath);
+                File backupDB = new File(sd, backupDBPath);
+
+                if (currentDB.exists()) {
+                    FileChannel src = new FileInputStream(currentDB).getChannel();
+                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+                    Toast.makeText(getApplicationContext(), R.string.exportDB_success, Toast.LENGTH_SHORT).show();
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText( getApplicationContext() , R.string.exportDB_failed , Toast.LENGTH_SHORT ).show();
+        }
+    }
+
+    public void ImportDatabase( MenuItem item ) {
+        //仅仅把传输方向倒转过来
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File data = Environment.getDataDirectory();
+
+            if (sd.canWrite()) {
+                String currentDBPath = "//data//com.mycompany.kristell//databases//test-db";
+                String backupDBPath = "test-db";
+//                File currentDB = new File(data, currentDBPath);
+//                File backupDB = new File(sd, backupDBPath);
+                File backupDB = new File(data, currentDBPath);
+                File currentDB = new File(sd, backupDBPath);
+
+                if (currentDB.exists()) {
+                    FileChannel src = new FileInputStream(currentDB).getChannel();
+                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+                    Toast.makeText(getApplicationContext(), R.string.importDB_success, Toast.LENGTH_SHORT).show();
+
+                    //重新打开数据库
+                    DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, getResources().getString(R.string.db_name) , null);
+                    db = helper.getWritableDatabase();
+                    daoMaster= new DaoMaster( db ) ;
+                    daoSession = daoMaster.newSession() ;
+
+                    listAllCards();
+                    showTotalMoney();
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), R.string.importDB_failed, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void listAllCards( ) {
@@ -225,21 +290,21 @@ public class MainActivity extends AppCompatActivity {
             tmpButton.setText(message);
             final AlertDialog.Builder modifyCardInfoDialog = new AlertDialog.Builder(this) ;
             EditText editText = new EditText(this);
-            modifyCardInfoDialog.setTitle("输入新的注释") ;
+            modifyCardInfoDialog.setTitle(getResources().getString(R.string.modifyCard_title)) ;
             editText.setHint(cards.get(i).getComments().toString()) ;
-            editText.setId(Integer.parseInt(cards.get(i).getId() + "" )) ;
+            editText.setId(Integer.parseInt(cards.get(i).getId() + "")) ;
             modifyCardInfoDialog.setView(editText) ;
-            modifyCardInfoDialog.setPositiveButton("好的",
+            modifyCardInfoDialog.setPositiveButton(getResources().getString(R.string.modifyCard_PositiveButton),
                     new modifyCardCommentListener(
-                            cards.get(i) ,
+                            cards.get(i),
                             editText
                     )
             );
-            modifyCardInfoDialog.setNegativeButton("算了", null);
+            modifyCardInfoDialog.setNegativeButton(getResources().getString(R.string.modifyCard_NegativeButton), null);
             tmpButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    modifyCardInfoDialog.show() ;
+                    modifyCardInfoDialog.show();
                 }
             });
             showLinear.addView(tmpButton, layoutParams);
@@ -265,17 +330,17 @@ public class MainActivity extends AppCompatActivity {
             tmpButton.setText(message);
             final AlertDialog.Builder modifyTransInfoDialog = new AlertDialog.Builder(this);
             EditText editText = new EditText(this);
-            modifyTransInfoDialog.setTitle("输入新的注释");
+            modifyTransInfoDialog.setTitle(getResources().getString(R.string.modifyTrans_title));
             editText.setHint(transaction.getComments());
             editText.setId(Integer.parseInt(transaction.getId() + ""));
             modifyTransInfoDialog.setView(editText);
-            modifyTransInfoDialog.setPositiveButton("好的",
+            modifyTransInfoDialog.setPositiveButton(getResources().getString(R.string.modifyTrans_PositiveButton),
                     new modifyTransCommentListener(
                             transaction,
                             editText
                     )
             );
-            modifyTransInfoDialog.setNegativeButton("算了", null);
+            modifyTransInfoDialog.setNegativeButton(getResources().getString(R.string.modifyTrans_NegativeButton), null);
             tmpButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -330,8 +395,9 @@ public class MainActivity extends AppCompatActivity {
         for( Card card : daoSession.getCardDao().loadAll() )
             money += card.getBalance() ;
         TextView __ = (TextView)findViewById(R.id.editText_test) ;
-        __.setText( "Total : " + money ) ;
-        __.setTextColor(Color.rgb(0, 0, 0));
+        __.setText(getResources().getString(R.string.total_money) + " : " + money) ;
+        if(money>1000) __.setTextColor(Color.rgb(0, 128, 0));
+        else __.setTextColor(Color.rgb(255, 0, 0));
         __.setTypeface(null, Typeface.BOLD_ITALIC);
     }
 }
