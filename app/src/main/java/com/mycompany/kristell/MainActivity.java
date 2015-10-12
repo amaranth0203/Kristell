@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
         for( int i = 0 ; i < cards.size() ; i ++ )
         {
             message +=  cards.get(i).getComments() + " : " +
-                    cards.get(i).getBalance() + "\n" +
+                    ( ( int )( ( cards.get(i).getBalance() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + "\n" +
                     new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
                             format(cards.get(i).getCreateTime()) + " created\n" +
                     new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
@@ -321,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
         final List<Transaction> trans = transactionDao.loadAll() ;
         String message = "" ;
         for( Transaction transaction : trans ) {
-            message +=  transaction.getAmount() + "\n" +
+            message += ( ( int )( ( transaction.getAmount() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + "\n" +
                     transaction.getComments() + "\n" +
                     new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
                             format(transaction.getOccurredTime()) ;
@@ -395,7 +395,8 @@ public class MainActivity extends AppCompatActivity {
         for( Card card : daoSession.getCardDao().loadAll() )
             money += card.getBalance() ;
         TextView __ = (TextView)findViewById(R.id.editText_test) ;
-        __.setText(getResources().getString(R.string.total_money) + " : " + money) ;
+        //四舍五入保留最后两位小数
+        __.setText(getResources().getString(R.string.total_money) + " : " + ( ( int )( ( money * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) ) ;
         if(money>1000) __.setTextColor(Color.rgb(0, 128, 0));
         else __.setTextColor(Color.rgb(255, 0, 0));
         __.setTypeface(null, Typeface.BOLD_ITALIC);
