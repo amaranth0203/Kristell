@@ -319,9 +319,10 @@ public class MainActivity extends AppCompatActivity {
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT) ;
         transactionDao = daoSession.getTransactionDao() ;
         final List<Transaction> trans = transactionDao.loadAll() ;
+        java.util.Collections.reverse( trans ) ;
         String message = "" ;
         for( Transaction transaction : trans ) {
-            message += ( ( int )( ( transaction.getAmount() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + "\n" +
+            message += ( ( int )( ( transaction.getAmount() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + " -> " + transaction.getCard().getComments() + "\n" +
                     transaction.getComments() + "\n" +
                     new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
                             format(transaction.getOccurredTime()) ;
