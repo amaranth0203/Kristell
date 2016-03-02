@@ -6,7 +6,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -35,11 +39,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity {
 
     private SQLiteDatabase db ;
     private DaoMaster daoMaster ;
@@ -48,23 +53,46 @@ public class MainActivity extends AppCompatActivity {
     private Transaction transaction ;
     private CardDao cardDao ;
     private Card card ;
-
+    DemoCollectionPagerAdapter mDemoCollectionPagerAdapter;
+    ViewPager mViewPager;
+    private void RefreshViewPager( ) {
+        mDemoCollectionPagerAdapter =
+                new DemoCollectionPagerAdapter(
+                        getSupportFragmentManager());
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setAdapter(mDemoCollectionPagerAdapter);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, getResources().getString(R.string.db_name) , null);
         db = helper.getWritableDatabase();
         daoMaster= new DaoMaster( db ) ;
         daoSession = daoMaster.newSession() ;
-        listAllCards();
         showTotalMoney();
+
+
+        mDemoCollectionPagerAdapter =
+                new DemoCollectionPagerAdapter(
+                        getSupportFragmentManager());
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setAdapter(mDemoCollectionPagerAdapter);
+
+    }
+    @Override
+    public void onPause(){
+        finish() ;
+        super.onPause();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
         return true;
     }
 
@@ -84,19 +112,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void ListAllCards(MenuItem item) {
-        listAllCards();
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setCurrentItem(0, true);
+    }
+
+    public void ListLast20Trans( MenuItem item ) {
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setCurrentItem(1,true);
     }
 
     public void ListAllTrans(MenuItem item) {
-        listAllTrans();
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setCurrentItem(3,true);
     }
 
     public void AddCard(MenuItem item) {
-        AlertDialog.Builder addCardDialog = new AlertDialog.Builder(this) ;
-        LinearLayout outter = new LinearLayout(this) ;
+        AlertDialog.Builder addCardDialog = new AlertDialog.Builder(this);
+        LinearLayout outter = new LinearLayout(this);
         final EditText edittext1 = new EditText(this);
         final EditText edittext2 = new EditText(this);
-        outter.setOrientation(LinearLayout.VERTICAL) ;
+        outter.setOrientation(LinearLayout.VERTICAL);
         edittext1.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
         edittext2.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
         edittext2.setRawInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
@@ -135,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                                 card.setBalance(0.0);
                             }
                             daoSession.getCardDao().insert(card);
-                            listAllCards();
+                            RefreshViewPager( ) ;
                             showTotalMoney();
                         }
                     }
@@ -197,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             transaction.setCard(card);
                             daoSession.getTransactionDao().insert(transaction);
-                            listAllCards();
+                            RefreshViewPager() ;
                             showTotalMoney();
                         }
                     }
@@ -260,96 +295,12 @@ public class MainActivity extends AppCompatActivity {
                     daoMaster= new DaoMaster( db ) ;
                     daoSession = daoMaster.newSession() ;
 
-                    listAllCards();
+                    RefreshViewPager() ;
                     showTotalMoney();
                 }
             }
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), R.string.importDB_failed, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void listAllCards( ) {
-        LinearLayout showLinear = ( LinearLayout )findViewById( R.id.showLinear ) ;
-        showLinear.removeAllViews();
-        Button tmpButton ;
-        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT) ;
-        cardDao = daoSession.getCardDao() ;
-        final List<Card> cards = cardDao.loadAll() ;
-        String message = "" ;
-        for( int i = 0 ; i < cards.size() ; i ++ )
-        {
-            message +=  cards.get(i).getComments() + " : " +
-                    ( ( int )( ( cards.get(i).getBalance() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + "\n" +
-                    new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
-                            format(cards.get(i).getCreateTime()) + " created\n" +
-                    new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
-                            format(cards.get(i).getLastTransaction()) + " final trans";
-            tmpButton = new Button( this ) ;
-            tmpButton.setGravity(Gravity.LEFT);
-            tmpButton.setText(message);
-            final AlertDialog.Builder modifyCardInfoDialog = new AlertDialog.Builder(this) ;
-            EditText editText = new EditText(this);
-            modifyCardInfoDialog.setTitle(getResources().getString(R.string.modifyCard_title)) ;
-            editText.setHint(cards.get(i).getComments().toString()) ;
-            editText.setId(Integer.parseInt(cards.get(i).getId() + "")) ;
-            modifyCardInfoDialog.setView(editText) ;
-            modifyCardInfoDialog.setPositiveButton(getResources().getString(R.string.modifyCard_PositiveButton),
-                    new modifyCardCommentListener(
-                            cards.get(i),
-                            editText
-                    )
-            );
-            modifyCardInfoDialog.setNegativeButton(getResources().getString(R.string.modifyCard_NegativeButton), null);
-            tmpButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    modifyCardInfoDialog.show();
-                }
-            });
-            showLinear.addView(tmpButton, layoutParams);
-            message = "" ;
-        }
-    }
-
-    private void listAllTrans( ) {
-        LinearLayout showLinear = ( LinearLayout )findViewById( R.id.showLinear ) ;
-        showLinear.removeAllViews();
-        Button tmpButton ;
-        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT) ;
-        transactionDao = daoSession.getTransactionDao() ;
-        final List<Transaction> trans = transactionDao.loadAll() ;
-        java.util.Collections.reverse( trans ) ;
-        String message = "" ;
-        for( Transaction transaction : trans ) {
-            message += ( ( int )( ( transaction.getAmount() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + " -> " + transaction.getCard().getComments() + "\n" +
-                    transaction.getComments() + "\n" +
-                    new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
-                            format(transaction.getOccurredTime()) ;
-            tmpButton = new Button(this);
-            tmpButton.setGravity(Gravity.LEFT);
-            tmpButton.setText(message);
-            final AlertDialog.Builder modifyTransInfoDialog = new AlertDialog.Builder(this);
-            EditText editText = new EditText(this);
-            modifyTransInfoDialog.setTitle(getResources().getString(R.string.modifyTrans_title));
-            editText.setHint(transaction.getComments());
-            editText.setId(Integer.parseInt(transaction.getId() + ""));
-            modifyTransInfoDialog.setView(editText);
-            modifyTransInfoDialog.setPositiveButton(getResources().getString(R.string.modifyTrans_PositiveButton),
-                    new modifyTransCommentListener(
-                            transaction,
-                            editText
-                    )
-            );
-            modifyTransInfoDialog.setNegativeButton(getResources().getString(R.string.modifyTrans_NegativeButton), null);
-            tmpButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    modifyTransInfoDialog.show();
-                }
-            });
-            showLinear.addView(tmpButton, layoutParams);
-            message = "";
         }
     }
 
@@ -364,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
             card.setComments(editText.getText().toString());
             cardDao = daoSession.getCardDao() ;
             cardDao.update(card);
-            listAllCards();
+            RefreshViewPager( ) ;
         }
     }
 
@@ -378,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(DialogInterface dialogInterface, int i) {
             transaction.setComments(editText.getText().toString());
             transactionDao.getSession().update(transaction) ;
-            listAllTrans();
+            RefreshViewPager();
         }
     }
 
@@ -402,4 +353,162 @@ public class MainActivity extends AppCompatActivity {
         else __.setTextColor(Color.rgb(255, 0, 0));
         __.setTypeface(null, Typeface.BOLD_ITALIC);
     }
+
+    public class DemoCollectionPagerAdapter extends FragmentStatePagerAdapter {
+        public ShowEntity GenerateShowEntity( int index ) {
+            ShowEntity showEntity = new ShowEntity() ;
+            Button tmpButton ;
+            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT) ;
+            switch(index){
+                case 0 : {
+                    // list all card
+                    cardDao = daoSession.getCardDao() ;
+                    final List<Card> cards = cardDao.loadAll() ;
+                    String message = "" ;
+                    for( int i = 0 ; i < cards.size() ; i ++ )
+                    {
+                        message +=  cards.get(i).getComments() + " : " +
+                                ( ( int )( ( cards.get(i).getBalance() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + "\n" +
+                                new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
+                                        format(cards.get(i).getCreateTime()) + " created\n" +
+                                new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
+                                        format(cards.get(i).getLastTransaction()) + " final trans";
+                        tmpButton = new Button( MainActivity.this ) ;
+                        tmpButton.setGravity(Gravity.LEFT);
+                        tmpButton.setText(message);
+                        final AlertDialog.Builder modifyCardInfoDialog = new AlertDialog.Builder(MainActivity.this) ;
+                        EditText editText = new EditText(MainActivity.this);
+                        modifyCardInfoDialog.setTitle(getResources().getString(R.string.modifyCard_title)) ;
+                        editText.setHint(cards.get(i).getComments().toString()) ;
+                        editText.setId(Integer.parseInt(cards.get(i).getId() + "")) ;
+                        modifyCardInfoDialog.setView(editText) ;
+                        modifyCardInfoDialog.setPositiveButton(getResources().getString(R.string.modifyCard_PositiveButton),
+                                new modifyCardCommentListener(
+                                        cards.get(i),
+                                        editText
+                                )
+                        );
+                        modifyCardInfoDialog.setNegativeButton(getResources().getString(R.string.modifyCard_NegativeButton), null);
+                        tmpButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                modifyCardInfoDialog.show();
+                            }
+                        });
+                        showEntity.getButtonList().add(tmpButton) ;
+                        message = "" ;
+                    }
+                }
+                break;
+                case 1 : {
+                    // list last 20 transaction
+                    transactionDao = daoSession.getTransactionDao() ;
+                    final List<Transaction> allTrans = transactionDao.loadAll() ;
+                    List<Transaction> trans = new ArrayList<Transaction>() ;
+                    for( int i = allTrans.size() - 1 ; i > allTrans.size() - 20 -1 & i >= 0  ; i -- ) {
+                        trans.add( allTrans.get( i ) ) ;
+                    }
+                    String message = "" ;
+                    for( Transaction transaction : trans ) {
+                        message += ( ( int )( ( transaction.getAmount() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + " -> " + transaction.getCard().getComments() + "\n" +
+                                transaction.getComments() + "\n" +
+                                new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
+                                        format(transaction.getOccurredTime()) ;
+                        tmpButton = new Button( MainActivity.this );
+                        tmpButton.setGravity(Gravity.LEFT);
+                        tmpButton.setText(message);
+                        final AlertDialog.Builder modifyTransInfoDialog = new AlertDialog.Builder( MainActivity.this );
+                        EditText editText = new EditText( MainActivity.this );
+                        modifyTransInfoDialog.setTitle(getResources().getString(R.string.modifyTrans_title));
+                        editText.setHint(transaction.getComments());
+                        editText.setId(Integer.parseInt(transaction.getId() + ""));
+                        modifyTransInfoDialog.setView(editText);
+                        modifyTransInfoDialog.setPositiveButton(getResources().getString(R.string.modifyTrans_PositiveButton),
+                                new modifyTransCommentListener(
+                                        transaction,
+                                        editText
+                                )
+                        );
+                        modifyTransInfoDialog.setNegativeButton(getResources().getString(R.string.modifyTrans_NegativeButton), null);
+                        tmpButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                modifyTransInfoDialog.show();
+                            }
+                        });
+                        showEntity.getButtonList().add(tmpButton) ;
+                        message = "";
+                    }
+                }
+                break ;
+                case 2 : {
+                    tmpButton = new Button( MainActivity.this );
+                    tmpButton.setGravity(Gravity.LEFT);
+                    tmpButton.setText("this tab is for lazy-loading all transaction");
+                    showEntity.getButtonList().add(tmpButton) ;
+                }
+                break ;
+                case 3 : {
+                    // list all transaction
+                    transactionDao = daoSession.getTransactionDao() ;
+                    final List<Transaction> trans = transactionDao.loadAll() ;
+                    java.util.Collections.reverse( trans ) ;
+                    String message = "" ;
+                    for( Transaction transaction : trans ) {
+                        message += ( ( int )( ( transaction.getAmount() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + " -> " + transaction.getCard().getComments() + "\n" +
+                                transaction.getComments() + "\n" +
+                                new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
+                                        format(transaction.getOccurredTime()) ;
+                        tmpButton = new Button( MainActivity.this );
+                        tmpButton.setGravity(Gravity.LEFT);
+                        tmpButton.setText(message);
+                        final AlertDialog.Builder modifyTransInfoDialog = new AlertDialog.Builder( MainActivity.this );
+                        EditText editText = new EditText( MainActivity.this );
+                        modifyTransInfoDialog.setTitle(getResources().getString(R.string.modifyTrans_title));
+                        editText.setHint(transaction.getComments());
+                        editText.setId(Integer.parseInt(transaction.getId() + ""));
+                        modifyTransInfoDialog.setView(editText);
+                        modifyTransInfoDialog.setPositiveButton(getResources().getString(R.string.modifyTrans_PositiveButton),
+                                new modifyTransCommentListener(
+                                        transaction,
+                                        editText
+                                )
+                        );
+                        modifyTransInfoDialog.setNegativeButton(getResources().getString(R.string.modifyTrans_NegativeButton), null);
+                        tmpButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                modifyTransInfoDialog.show();
+                            }
+                        });
+                        showEntity.getButtonList().add(tmpButton) ;
+                        message = "";
+                    }
+                }
+                break ;
+            }
+            return showEntity ;
+        }
+        public DemoCollectionPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+        @Override
+        public Fragment getItem(int i) {
+            Fragment fragment = new DemoObjectFragment();
+            Bundle args = new Bundle();
+//            args.putInt(DemoObjectFragment.ARG_OBJECT,i+1) ;
+            args.putSerializable(DemoObjectFragment.ARG_OBJECT , GenerateShowEntity( i ));
+            fragment.setArguments(args);
+            return fragment;
+        }
+        @Override
+        public int getCount() {
+            return 4;
+        }
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return "OBJECT " + (position + 1);
+        }
+    }
+
 }
