@@ -1,20 +1,25 @@
 package com.mycompany.kristell;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -243,64 +248,142 @@ public class MainActivity extends FragmentActivity {
     }
 
     public void exportDatabase( MenuItem item ) {
+        final int REQUEST_WRITE_STORAGE = 112;
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_STORAGE);
+        }
         try {
             File sd = Environment.getExternalStorageDirectory();
             File data = Environment.getDataDirectory();
-
             if (sd.canWrite()) {
-                String currentDBPath = "//data//com.mycompany.kristell//databases//test-db";
-                String backupDBPath = "test-db";
-                File currentDB = new File(data, currentDBPath);
-                File backupDB = new File(sd, backupDBPath);
+                String currentDBPath ;
+                String backupDBPath ;
+                File currentDB ;
+                File backupDB ;
+                FileChannel src ;
+                FileChannel dst ;
 
-                if (currentDB.exists()) {
-                    FileChannel src = new FileInputStream(currentDB).getChannel();
-                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
-                    dst.transferFrom(src, 0, src.size());
-                    src.close();
-                    dst.close();
-                    Toast.makeText(getApplicationContext(), R.string.exportDB_success, Toast.LENGTH_SHORT).show();
+                currentDBPath = "//data//com.mycompany.kristell//databases//test-db";
+                backupDBPath = "test-db";
+                currentDB = new File(data, currentDBPath);
+                backupDB = new File(sd, backupDBPath);
+
+                if (!currentDB.exists()) {
+                    currentDB.createNewFile() ;
                 }
+                if (!backupDB.exists()) {
+                    backupDB.createNewFile() ;
+                }
+                src = new FileInputStream(currentDB).getChannel();
+                dst = new FileOutputStream(backupDB).getChannel();
+                dst.transferFrom(src, 0, src.size());
+                src.close();
+                dst.close();
+
+                currentDBPath = "//data//com.mycompany.kristell//databases//test-db-journal";
+                backupDBPath = "test-db-journal";
+                currentDB = new File(data, currentDBPath);
+                backupDB = new File(sd, backupDBPath);
+
+                if (!currentDB.exists()) {
+                    currentDB.createNewFile() ;
+                }
+                if (!backupDB.exists()) {
+                    backupDB.createNewFile() ;
+                }
+                src = new FileInputStream(currentDB).getChannel();
+                dst = new FileOutputStream(backupDB).getChannel();
+                dst.transferFrom(src, 0, src.size());
+                src.close();
+                dst.close();
+                Toast.makeText(getApplicationContext(), R.string.exportDB_success, Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(getApplicationContext(), "sd.canWrite() false", Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
-            Toast.makeText( getApplicationContext() , R.string.exportDB_failed , Toast.LENGTH_SHORT ).show();
+            Toast.makeText( getApplicationContext() , e.toString() , Toast.LENGTH_SHORT ).show();
         }
     }
 
     public void ImportDatabase( MenuItem item ) {
+        final int REQUEST_WRITE_STORAGE = 112;
+        boolean hasPermission = (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        if (!hasPermission) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_WRITE_STORAGE);
+        }
         //仅仅把传输方向倒转过来
         try {
             File sd = Environment.getExternalStorageDirectory();
             File data = Environment.getDataDirectory();
-
             if (sd.canWrite()) {
-                String currentDBPath = "//data//com.mycompany.kristell//databases//test-db";
-                String backupDBPath = "test-db";
-//                File currentDB = new File(data, currentDBPath);
-//                File backupDB = new File(sd, backupDBPath);
-                File backupDB = new File(data, currentDBPath);
-                File currentDB = new File(sd, backupDBPath);
+                String currentDBPath ;
+                String backupDBPath ;
+                File currentDB ;
+                File backupDB ;
+                FileChannel src ;
+                FileChannel dst ;
 
-                if (currentDB.exists()) {
-                    FileChannel src = new FileInputStream(currentDB).getChannel();
-                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
-                    dst.transferFrom(src, 0, src.size());
-                    src.close();
-                    dst.close();
-                    Toast.makeText(getApplicationContext(), R.string.importDB_success, Toast.LENGTH_SHORT).show();
+                currentDBPath = "//data//com.mycompany.kristell//databases//test-db";
+                backupDBPath = "test-db";
+//                currentDB = new File(data, currentDBPath);
+//                backupDB = new File(sd, backupDBPath);
+                backupDB = new File(data, currentDBPath);
+                currentDB = new File(sd, backupDBPath);
 
-                    //重新打开数据库
-                    DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, getResources().getString(R.string.db_name) , null);
-                    db = helper.getWritableDatabase();
-                    daoMaster= new DaoMaster( db ) ;
-                    daoSession = daoMaster.newSession() ;
-
-                    RefreshViewPager() ;
-                    showTotalMoney();
+                if (!currentDB.exists()) {
+                    currentDB.createNewFile() ;
                 }
+                if (!backupDB.exists()) {
+                    backupDB.createNewFile() ;
+                }
+                src = new FileInputStream(currentDB).getChannel();
+                dst = new FileOutputStream(backupDB).getChannel();
+                dst.transferFrom(src, 0, src.size());
+                src.close();
+                dst.close();
+
+                currentDBPath = "//data//com.mycompany.kristell//databases//test-db-journal";
+                backupDBPath = "test-db-journal";
+//                currentDB = new File(data, currentDBPath);
+//                backupDB = new File(sd, backupDBPath);
+                backupDB = new File(data, currentDBPath);
+                currentDB = new File(sd, backupDBPath);
+
+                if (!currentDB.exists()) {
+                    currentDB.createNewFile() ;
+                }
+                if (!backupDB.exists()) {
+                    backupDB.createNewFile() ;
+                }
+                src = new FileInputStream(currentDB).getChannel();
+                dst = new FileOutputStream(backupDB).getChannel();
+                dst.transferFrom(src, 0, src.size());
+                src.close();
+                dst.close();
+                Toast.makeText(getApplicationContext(), R.string.importDB_success, Toast.LENGTH_SHORT).show();
+
+                //重新打开数据库
+                DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, getResources().getString(R.string.db_name) , null);
+                db = helper.getWritableDatabase();
+                daoMaster= new DaoMaster( db ) ;
+                daoSession = daoMaster.newSession() ;
+
+                RefreshViewPager() ;
+                showTotalMoney();
+            }
+            else {
+                Toast.makeText(getApplicationContext(), "sd.canWrite() false", Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), R.string.importDB_failed, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), e.toString() , Toast.LENGTH_SHORT).show();
         }
     }
 
