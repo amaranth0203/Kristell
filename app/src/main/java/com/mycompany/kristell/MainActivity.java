@@ -502,6 +502,7 @@ public class MainActivity extends FragmentActivity {
                         showEntity.getButtonList().add(tmpButton) ;
                         message = "" ;
                     }
+                    showTotalMoney( ) ;
                 }
                 break;
                 case 1 : {
