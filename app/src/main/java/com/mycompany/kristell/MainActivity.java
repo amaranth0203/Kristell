@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import de.greenrobot.dao.query.Query;
+
 
 public class MainActivity extends FragmentActivity {
 
@@ -58,6 +60,8 @@ public class MainActivity extends FragmentActivity {
     private Transaction transaction ;
     private CardDao cardDao ;
     private Card card ;
+    private static String keyword = "→" ;
+    final String timeFmt = "yyyy.MM.dd HH:mm:ss" ;
     DemoCollectionPagerAdapter mDemoCollectionPagerAdapter;
     ViewPager mViewPager;
     private void RefreshViewPager( ) {
@@ -66,6 +70,7 @@ public class MainActivity extends FragmentActivity {
                         getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mDemoCollectionPagerAdapter);
+        mViewPager.setOffscreenPageLimit(1);
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +90,7 @@ public class MainActivity extends FragmentActivity {
                         getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mDemoCollectionPagerAdapter);
+        mViewPager.setOffscreenPageLimit(1);
 
     }
     @Override
@@ -128,7 +134,7 @@ public class MainActivity extends FragmentActivity {
 
     public void ListAllTrans(MenuItem item) {
         mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setCurrentItem(3,true);
+        mViewPager.setCurrentItem(4,true);
     }
 
     public void AddCard(MenuItem item) {
@@ -238,6 +244,8 @@ public class MainActivity extends FragmentActivity {
                             transaction.setCard(card);
                             daoSession.getTransactionDao().insert(transaction);
                             RefreshViewPager() ;
+                            mViewPager = (ViewPager) findViewById(R.id.pager);
+                            mViewPager.setCurrentItem(1, true);
                             showTotalMoney();
                         }
                     }
@@ -416,6 +424,19 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
+    private class searchListener implements DialogInterface.OnClickListener{
+        private EditText editText ;
+        public searchListener( EditText editText ) {
+            this.editText = editText ;
+        }
+        public void onClick( DialogInterface dialogInterface , int i ) {
+            MainActivity.this.keyword = this.editText.getText().toString() ;
+            RefreshViewPager();
+            mViewPager = (ViewPager) findViewById(R.id.pager);
+            mViewPager.setCurrentItem(2, true);
+        }
+    }
+
     private Card getCardByComment( String comment ) {
         List<Card> cards = daoSession.getCardDao().loadAll() ;
         for( Card card : cards ) {
@@ -452,9 +473,9 @@ public class MainActivity extends FragmentActivity {
                     {
                         message +=  cards.get(i).getComments() + " : " +
                                 ( ( int )( ( cards.get(i).getBalance() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + "\n" +
-                                new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
+                                new SimpleDateFormat(timeFmt).
                                         format(cards.get(i).getCreateTime()) + " created\n" +
-                                new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
+                                new SimpleDateFormat(timeFmt).
                                         format(cards.get(i).getLastTransaction()) + " final trans";
                         tmpButton = new Button( MainActivity.this ) ;
                         tmpButton.setGravity(Gravity.LEFT);
@@ -495,7 +516,7 @@ public class MainActivity extends FragmentActivity {
                     for( Transaction transaction : trans ) {
                         message += ( ( int )( ( transaction.getAmount() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + " -> " + transaction.getCard().getComments() + "\n" +
                                 transaction.getComments() + "\n" +
-                                new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
+                                new SimpleDateFormat(timeFmt).
                                         format(transaction.getOccurredTime()) ;
                         tmpButton = new Button( MainActivity.this );
                         tmpButton.setGravity(Gravity.LEFT);
@@ -522,16 +543,89 @@ public class MainActivity extends FragmentActivity {
                         showEntity.getButtonList().add(tmpButton) ;
                         message = "";
                     }
+                    showTotalMoney( ) ;
                 }
                 break ;
                 case 2 : {
+                    // searching
                     tmpButton = new Button( MainActivity.this );
+                    tmpButton.setGravity(Gravity.LEFT);
+                    tmpButton.setText("Searching " + keyword + " ...");
+                    final AlertDialog.Builder searchDialog = new AlertDialog.Builder( MainActivity.this );
+                    EditText editText = new EditText( MainActivity.this );
+                    searchDialog.setTitle("Enter keyword");
+                    searchDialog.setView(editText);
+                    searchDialog.setPositiveButton(getResources().getString(R.string.modifyTrans_PositiveButton),
+                            new searchListener(editText)
+                    );
+                    searchDialog.setNegativeButton(getResources().getString(R.string.modifyTrans_NegativeButton), null);
+                    tmpButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            searchDialog.show();
+                        }
+                    });
+                    showEntity.getButtonList().add(tmpButton) ;
+                    Query<Transaction> queryTrans = transactionDao.queryBuilder().where(TransactionDao.Properties.Comments.like("%" + keyword + "%")).build() ;
+                    List<Transaction> commentTrans = queryTrans.list() ;
+                    List<Transaction> trans = new ArrayList<Transaction>(commentTrans) ;
+                    Query<Card> queryCard = cardDao.queryBuilder().where(CardDao.Properties.Comments.like( "%" + keyword + "%" ) ).build() ;
+                    for( Card card : queryCard.list() ) {
+                        trans.addAll( card.getTransactionList() ) ;
+                    }
+
+                    double money = 0 ;
+                    for( Transaction t : trans ) {
+                        money += t.getAmount() ;
+                    }
+                    TextView __ = (TextView)findViewById(R.id.editText_test) ;
+                    //四舍五入保留最后两位小数
+                    __.setText("Add up" + " : " + ( ( int )( ( money * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) ) ;
+                    __.setTextColor(Color.rgb(0, 128, 0));
+                    __.setTypeface(null, Typeface.BOLD_ITALIC);
+
+                    java.util.Collections.reverse( trans ) ;
+                    String message = "" ;
+                    for( Transaction transaction : trans ) {
+                        message += ( ( int )( ( transaction.getAmount() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + " -> " + transaction.getCard().getComments() + "\n" +
+                                transaction.getComments() + "\n" +
+                                new SimpleDateFormat(timeFmt).
+                                        format(transaction.getOccurredTime()) ;
+                        tmpButton = new Button( MainActivity.this );
+                        tmpButton.setGravity(Gravity.LEFT);
+                        tmpButton.setText(message);
+                        final AlertDialog.Builder modifyTransInfoDialog = new AlertDialog.Builder( MainActivity.this );
+                        editText = new EditText( MainActivity.this );
+                        modifyTransInfoDialog.setTitle(getResources().getString(R.string.modifyTrans_title));
+                        editText.setHint(transaction.getComments());
+                        editText.setId(Integer.parseInt(transaction.getId() + ""));
+                        modifyTransInfoDialog.setView(editText);
+                        modifyTransInfoDialog.setPositiveButton(getResources().getString(R.string.modifyTrans_PositiveButton),
+                                new modifyTransCommentListener(
+                                        transaction,
+                                        editText
+                                )
+                        );
+                        modifyTransInfoDialog.setNegativeButton(getResources().getString(R.string.modifyTrans_NegativeButton), null);
+                        tmpButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                modifyTransInfoDialog.show();
+                            }
+                        });
+                        showEntity.getButtonList().add(tmpButton) ;
+                        message = "";
+                    }
+                }
+                break ;
+                case 3 : {
+                    tmpButton = new Button( MainActivity.this);
                     tmpButton.setGravity(Gravity.LEFT);
                     tmpButton.setText("this tab is for lazy-loading all transaction");
                     showEntity.getButtonList().add(tmpButton) ;
                 }
                 break ;
-                case 3 : {
+                case 4 : {
                     // list all transaction
                     transactionDao = daoSession.getTransactionDao() ;
                     final List<Transaction> trans = transactionDao.loadAll() ;
@@ -540,7 +634,7 @@ public class MainActivity extends FragmentActivity {
                     for( Transaction transaction : trans ) {
                         message += ( ( int )( ( transaction.getAmount() * 1000 ) + 5 ) / 10 ) / ( 1.0 * 100 ) + " -> " + transaction.getCard().getComments() + "\n" +
                                 transaction.getComments() + "\n" +
-                                new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").
+                                new SimpleDateFormat(timeFmt).
                                         format(transaction.getOccurredTime()) ;
                         tmpButton = new Button( MainActivity.this );
                         tmpButton.setGravity(Gravity.LEFT);
@@ -567,6 +661,7 @@ public class MainActivity extends FragmentActivity {
                         showEntity.getButtonList().add(tmpButton) ;
                         message = "";
                     }
+                    showTotalMoney( ) ;
                 }
                 break ;
             }
@@ -586,7 +681,7 @@ public class MainActivity extends FragmentActivity {
         }
         @Override
         public int getCount() {
-            return 4;
+            return 5;
         }
         @Override
         public CharSequence getPageTitle(int position) {
